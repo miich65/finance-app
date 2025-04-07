@@ -10,7 +10,10 @@ connectDB();
 
 // Middleware
 app.use(express.json({ extended: false }));
-app.use(cors());
+
+const corsOptions = require('./cors-config');
+// Enable CORS with options
+app.use(cors(corsOptions));
 
 // Define Routes
 app.use('/api/users', require('./routes/users'));
