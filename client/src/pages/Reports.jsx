@@ -18,7 +18,9 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TablePagination
+  TablePagination,
+  TextField,
+  Chip
 } from '@mui/material';
 import { 
   PictureAsPdf, 

@@ -8,7 +8,7 @@ const AuthContext = createContext();
 // Stato iniziale
 const initialState = {
   token: localStorage.getItem('token'),
-  isAuthenticated: null,
+  isAuthenticated: false,
   loading: true,
   user: null,
   error: null
@@ -54,6 +54,11 @@ const authReducer = (state, action) => {
         ...state,
         error: null
       };
+    case 'SET_LOADING':
+      return {
+        ...state,
+        loading: true
+      };
     default:
       return state;
   }
@@ -66,17 +71,29 @@ const AuthProvider = ({ children }) => {
   // Carica l'utente al mount del componente se esiste un token
   useEffect(() => {
     if (localStorage.token) {
+      setAuthToken(localStorage.token);
       loadUser();
+    } else {
+      // Se non c'è un token, imposta immediatamente il caricamento a false
+      dispatch({ type: 'LOGOUT' });
     }
   }, []);
 
   // Carica i dati dell'utente
   const loadUser = async () => {
-    if (localStorage.token) {
-      setAuthToken(localStorage.token);
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      dispatch({ type: 'LOGOUT' });
+      return;
     }
-
+  
     try {
+      // Imposta il token prima di fare la chiamata
+      setAuthToken(token);
+      
+      dispatch({ type: 'SET_LOADING' });
+      
       const res = await axios.get('/api/auth');
       
       dispatch({
@@ -84,9 +101,10 @@ const AuthProvider = ({ children }) => {
         payload: res.data
       });
     } catch (err) {
-      dispatch({
+      // Se c'è un errore (es. token scaduto), effettua il logout
+      dispatch({ 
         type: 'AUTH_ERROR',
-        payload: err.response?.data?.msg || 'Error loading user'
+        payload: err.response?.data?.msg || 'Error loading user' 
       });
     }
   };
@@ -100,6 +118,8 @@ const AuthProvider = ({ children }) => {
     };
 
     try {
+      dispatch({ type: 'SET_LOADING' });
+      
       const res = await axios.post('/api/users', formData, config);
 
       dispatch({
@@ -123,15 +143,20 @@ const AuthProvider = ({ children }) => {
         'Content-Type': 'application/json'
       }
     };
-
+  
     try {
+      dispatch({ type: 'SET_LOADING' });
+      
       const res = await axios.post('/api/auth', formData, config);
-
+  
+      // Imposta il token prima di salvarlo
+      setAuthToken(res.data.token);
+  
       dispatch({
         type: 'LOGIN_SUCCESS',
         payload: res.data
       });
-
+  
       loadUser();
     } catch (err) {
       dispatch({

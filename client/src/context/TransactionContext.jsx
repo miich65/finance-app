@@ -1,4 +1,4 @@
-import React, { createContext, useReducer, useContext } from 'react';
+import React, { createContext, useReducer, useContext, useCallback, useMemo} from 'react';
 import { transactionsAPI } from '../utils/api';
 
 // Creazione del context
@@ -11,7 +11,8 @@ const types = {
   DELETE_TRANSACTION: 'DELETE_TRANSACTION',
   TRANSACTION_ERROR: 'TRANSACTION_ERROR',
   CLEAR_TRANSACTIONS: 'CLEAR_TRANSACTIONS',
-  SET_LOADING: 'SET_LOADING'
+  SET_LOADING: 'SET_LOADING',
+  GET_TRANSACTIONS_PAGE: 'GET_TRANSACTIONS_PAGE'
 };
 
 // Reducer per gestire lo stato
@@ -21,6 +22,15 @@ const transactionReducer = (state, action) => {
       return {
         ...state,
         transactions: action.payload,
+        loading: false,
+        page: 1
+      };
+    case types.GET_TRANSACTIONS_PAGE:
+      return {
+        ...state,
+        transactions: [...state.transactions, ...action.payload],
+        hasMore: action.payload.length > 0,
+        page: state.page + 1,
         loading: false
       };
     case types.ADD_TRANSACTION:
@@ -64,13 +74,16 @@ export const TransactionProvider = ({ children }) => {
   const initialState = {
     transactions: [],
     loading: true,
-    error: null
+    error: null,
+    page: 1,
+    limit: 20,
+    hasMore: true
   };
 
   const [state, dispatch] = useReducer(transactionReducer, initialState);
 
   // Azioni
-  const getTransactions = async () => {
+  const getTransactions = useCallback(async () => {
     try {
       dispatch({ type: types.SET_LOADING });
       const res = await transactionsAPI.getAll();
@@ -85,9 +98,30 @@ export const TransactionProvider = ({ children }) => {
         payload: err.response?.data.msg || 'Errore nel caricamento delle transazioni'
       });
     }
-  };
+  }, []);
 
-  const addTransaction = async (transaction) => {
+  const getTransactionsPage = useCallback(async () => {
+
+    if (!state.hasMore || state.loading) return;
+    
+    try {
+      dispatch({ type: types.SET_LOADING });
+      const res = await transactionsAPI.getPaginated(state.page, state.limit);
+      
+      dispatch({
+        type: types.GET_TRANSACTIONS_PAGE,
+        payload: res.data
+      });
+    } catch (err) {
+      dispatch({
+        type: types.TRANSACTION_ERROR,
+        payload: err.response?.data.msg || 'Errore nel caricamento delle transazioni'
+      });
+    }
+  }, [state.hasMore, state.loading, state.page, state.limit]);
+  
+
+  const addTransaction = useCallback(async (transaction) => {
     try {
       dispatch({ type: types.SET_LOADING });
       const res = await transactionsAPI.create(transaction);
@@ -105,9 +139,9 @@ export const TransactionProvider = ({ children }) => {
       });
       throw err;
     }
-  };
+  }, []);
 
-  const deleteTransaction = async (id) => {
+  const deleteTransaction = useCallback(async (id) => {
     try {
       dispatch({ type: types.SET_LOADING });
       await transactionsAPI.delete(id);
@@ -122,24 +156,36 @@ export const TransactionProvider = ({ children }) => {
         payload: err.response?.data.msg || 'Errore nell\'eliminazione della transazione'
       });
     }
-  };
+  }, []);
 
-  const clearTransactions = () => {
+  const clearTransactions = useCallback(() => {
     dispatch({ type: types.CLEAR_TRANSACTIONS });
-  };
+  }, []);
+
+  // Usa useMemo per il valore del contesto
+  const contextValue = useMemo(() => ({
+    transactions: state.transactions,
+    loading: state.loading,
+    error: state.error,
+    hasMore: state.hasMore,
+    page: state.page,
+    limit: state.limit,
+    getTransactions,
+    getTransactionsPage,
+    addTransaction,
+    deleteTransaction,
+    clearTransactions
+  }), [
+    state.transactions, 
+    state.loading, 
+    state.error, 
+    state.hasMore,
+    state.page,
+    state.limit,
+  ]);
 
   return (
-    <TransactionContext.Provider
-      value={{
-        transactions: state.transactions,
-        loading: state.loading,
-        error: state.error,
-        getTransactions,
-        addTransaction,
-        deleteTransaction,
-        clearTransactions
-      }}
-    >
+    <TransactionContext.Provider value={contextValue} >
       {children}
     </TransactionContext.Provider>
   );
@@ -154,4 +200,4 @@ export const useTransactions = () => {
   return context;
 };
 
-export default TransactionContext;
+export {TransactionContext};

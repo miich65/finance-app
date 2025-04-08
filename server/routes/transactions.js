@@ -22,6 +22,29 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
+// @route   GET api/transactions/paginated
+// @desc    Get paginated user's transactions
+// @access  Private
+router.get('/paginated', auth, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    
+    const transactions = await Transaction.find({ userId: req.user.id })
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('categoryId', 'name type')
+      .populate('accountId', 'name');
+    
+    res.json(transactions);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 // @route   POST api/transactions
 // @desc    Add new transaction
 // @access  Private

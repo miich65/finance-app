@@ -19,7 +19,7 @@ api.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
-);
+); 
 
 // Funzioni API per autenticazione
 export const authAPI = {
@@ -32,7 +32,8 @@ export const authAPI = {
 export const transactionsAPI = {
   getAll: () => api.get('/transactions'),
   create: (transactionData) => api.post('/transactions', transactionData),
-  delete: (id) => api.delete(`/transactions/${id}`)
+  delete: (id) => api.delete(`/transactions/${id}`),
+  getPaginated: (page, limit) => axios.get(`/transactions?page=${page}&limit=${limit}`)
 };
 
 // Funzioni API per categorie

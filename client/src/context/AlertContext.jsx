@@ -1,5 +1,6 @@
-import React, { createContext, useReducer } from 'react';
+import React, { createContext, useReducer, useContext } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { Alert, Snackbar } from '@mui/material';
 
 // Creazione del Context
 const AlertContext = createContext();
@@ -81,19 +82,27 @@ const AlertProvider = ({ children }) => {
 
 // Componente Alert per visualizzare gli alert
 const AlertComponent = () => {
-  const { alerts } = useContext(AlertContext);
+  // Usa useContext qui per accedere al contesto
+  const { alerts, removeAlert } = useContext(AlertContext);
 
   return (
     <div className="alert-container" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1500 }}>
       {alerts.map(alert => (
-        <Alert 
+        <Snackbar
           key={alert.id}
-          severity={alert.type}
-          sx={{ mb: 2, minWidth: '250px' }}
+          open={true}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          autoHideDuration={6000}
           onClose={() => removeAlert(alert.id)}
         >
-          {alert.msg}
-        </Alert>
+          <Alert 
+            severity={alert.type}
+            sx={{ mb: 2, minWidth: '250px' }}
+            onClose={() => removeAlert(alert.id)}
+          >
+            {alert.msg}
+          </Alert>
+        </Snackbar>
       ))}
     </div>
   );
