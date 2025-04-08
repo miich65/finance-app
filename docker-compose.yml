@@ -1,74 +1,18 @@
-version: '3.3'
+version: '3.8'
 
 services:
-  # MongoDB service
-  mongodb:
-    image: mongo:4.4
-    container_name: finance-app-mongodb
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-    environment:
-      - MONGO_INITDB_DATABASE=finance-app
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=password
-    networks:
-      - app-network
-
-  # MongoDB setup
-  mongo-setup:
-    image: mongo:4.4
-    container_name: finance-app-mongo-setup
-    depends_on:
-      - mongodb
-    volumes:
-      - ./mongo-init.js:/mongo-init.js
-    command: >
-      bash -c "sleep 10 && mongo mongodb://root:password@mongodb:27017/admin /mongo-init.js"
-    networks:
-      - app-network
-
-  # Backend service
-  server:
-    build: 
-      context: ./server
-      dockerfile: Dockerfile
-    container_name: finance-app-server
-    restart: always
-    depends_on:
-      - mongodb
-      - mongo-setup
+  backend:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
     ports:
       - "5000:5000"
     environment:
-      - NODE_ENV=development
-      - MONGO_URI=mongodb://finance-app-user:bjkwjewg013Abc@mongodb:27017/finance-app
-      - JWT_SECRET=mysecrettoken
-      - PORT=5000
-    networks:
-      - app-network
-
-  # Frontend service (development mode)
-  client:
+      - MONGO_URI=mongodb://finance-app-user:bjkwjewg0'13£!Abc@127.0.0.1:27017/finance-app?authSource=finance-app
+    network_mode: "host"
+  frontend:
     build:
-      context: ./client
-      dockerfile: Dockerfile
-    container_name: finance-app-client
-    restart: always
-    depends_on:
-      - server
+      context: .
+      dockerfile: client/Dockerfile
     ports:
       - "3000:3000"
-    environment:
-      - REACT_APP_API_URL=http://localhost:5000/api
-      - WDS_SOCKET_PORT=0
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
-
-volumes:
-  mongodb_data:

@@ -1,18 +1,16 @@
-FROM node:16-alpine
+# server/Dockerfile
+
+FROM node:18
 
 WORKDIR /app
 
-# Copying package files first to leverage Docker cache
 COPY package*.json ./
+COPY server ./server
 
-# Install dependencies
+WORKDIR /app/server
+
 RUN npm install
 
-# Copy the rest of the application
-COPY . .
-
-# Expose the port the app runs on
 EXPOSE 5000
 
-# Command to run the application
-CMD ["npm", "start"]
+CMD ["node", "server.js"]

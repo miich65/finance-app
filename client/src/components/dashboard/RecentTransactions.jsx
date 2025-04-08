@@ -18,7 +18,7 @@ import {
   Receipt,
   MoreHoriz
 } from '@mui/icons-material';
-import { TransactionContext } from '../context/TransactionContext';
+import { TransactionContext } from '../../context/TransactionContext';
 import { Link as RouterLink } from 'react-router-dom';
 
 const RecentTransactions = () => {

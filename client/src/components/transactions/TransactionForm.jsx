@@ -1,32 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, FormControl, InputLabel, Select, MenuItem, 
-         FormControlLabel, Checkbox, Grid, Paper, Typography } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
-import DateFnsUtils from '@date-io/date-fns';
-import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
-import { useTransactions } from '../../context/TransactionContext';
-import { useCategories } from '../../context/CategoryContext';
-import { useAccounts } from '../../context/AccountContext';
-import { useAlerts } from '../../context/AlertContext';
+import { 
+  TextField, 
+  Button, 
+  FormControl, 
+  InputLabel, 
+  Select, 
+  MenuItem, 
+  FormControlLabel, 
+  Checkbox, 
+  Grid, 
+  Paper, 
+  Typography 
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import { useContext } from 'react';
+import { TransactionContext } from '../../context/TransactionContext';
+import { CategoryContext } from '../../context/CategoryContext';
+import { AccountContext } from '../../context/AccountContext';
+import { AlertContext } from '../../context/AlertContext';
 
-const useStyles = makeStyles((theme) => ({
-  form: {
-    padding: theme.spacing(3)
-  },
-  submitButton: {
-    marginTop: theme.spacing(2)
-  },
-  title: {
-    marginBottom: theme.spacing(2)
-  }
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3)
 }));
 
-const TransactionForm = () => {
-  const classes = useStyles();
-  const { addTransaction } = useTransactions();
-  const { categories, getCategories } = useCategories();
-  const { accounts, getAccounts } = useAccounts();
-  const { setAlert } = useAlerts();
+const StyledSubmitButton = styled(Button)(({ theme }) => ({
+  marginTop: theme.spacing(2)
+}));
+
+const StyledTitle = styled(Typography)(({ theme }) => ({
+  marginBottom: theme.spacing(2)
+}));
+
+const TransactionForm = ({ onTransactionAdded }) => {
+  const { addTransaction } = useContext(TransactionContext);
+  const { categories, getCategories } = useContext(CategoryContext);
+  const { accounts, getAccounts } = useContext(AccountContext);
+  const { setAlert } = useContext(AlertContext);
 
   const [formData, setFormData] = useState({
     amount: '',
@@ -54,8 +65,8 @@ const TransactionForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleDateChange = date => {
-    setFormData({ ...formData, date });
+  const handleDateChange = (newDate) => {
+    setFormData({ ...formData, date: newDate });
   };
 
   const handleCheckboxChange = e => {
@@ -101,16 +112,20 @@ const TransactionForm = () => {
       });
       
       setAlert('Transazione aggiunta con successo', 'success');
+      
+      if (onTransactionAdded) {
+        onTransactionAdded();
+      }
     } catch (err) {
       setAlert('Errore durante l\'aggiunta della transazione', 'error');
     }
   };
 
   return (
-    <Paper className={classes.form}>
-      <Typography variant="h6" className={classes.title}>
+    <StyledPaper>
+      <StyledTitle variant="h6">
         Aggiungi Transazione
-      </Typography>
+      </StyledTitle>
       
       <form onSubmit={handleSubmit}>
         <Grid container spacing={2}>
@@ -146,20 +161,14 @@ const TransactionForm = () => {
           
           {/* Date */}
           <Grid item xs={12} sm={6}>
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <KeyboardDatePicker
-                fullWidth
-                variant="inline"
-                format="dd/MM/yyyy"
-                margin="normal"
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
                 label="Data"
                 value={date}
                 onChange={handleDateChange}
-                KeyboardButtonProps={{
-                  'aria-label': 'cambia data',
-                }}
+                renderInput={(params) => <TextField {...params} fullWidth />}
               />
-            </MuiPickersUtilsProvider>
+            </LocalizationProvider>
           </Grid>
           
           {/* Description */}
@@ -236,7 +245,7 @@ const TransactionForm = () => {
               type="submit"
               variant="contained"
               color="primary"
-              className={classes.submitButton}
+              sx={{ mt: 2 }}
               fullWidth
             >
               {transactionType === 'income' ? 'Aggiungi Entrata' : 'Aggiungi Uscita'}
@@ -244,7 +253,7 @@ const TransactionForm = () => {
           </Grid>
         </Grid>
       </form>
-    </Paper>
+    </StyledPaper>
   );
 };
 

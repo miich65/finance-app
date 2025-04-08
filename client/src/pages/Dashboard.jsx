@@ -8,10 +8,15 @@ import {
 } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
+
+// Importazioni corrette dei componenti dashboard
 import DashboardSummary from '../components/dashboard/DashboardSummary';
 import CashflowChart from '../components/dashboard/CashflowChart';
 import CategoryDistribution from '../components/dashboard/CategoryDistribution';
 import RecentTransactions from '../components/dashboard/RecentTransactions';
+import QuickAddTransaction from '../components/dashboard/QuickAddTransaction';
+
+// Importazioni dei context
 import { TransactionContext } from '../context/TransactionContext';
 import { CategoryContext } from '../context/CategoryContext';
 import { AccountContext } from '../context/AccountContext';
@@ -39,11 +44,14 @@ const Dashboard = () => {
           color="primary"
           startIcon={<Add />}
           component={RouterLink}
-          to="/transactions/add"
+          to="/transactions"
         >
           Nuova Transazione
         </Button>
       </Box>
+
+      {/* Componente per aggiungere rapidamente una transazione */}
+      <QuickAddTransaction />
 
       {/* Riepilogo finanziario */}
       <DashboardSummary />

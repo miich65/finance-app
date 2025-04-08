@@ -58,14 +58,6 @@ const theme = createTheme({
   },
 });
 
-// NotFound page
-const NotFoundPage = () => (
-  <div style={{ textAlign: 'center', marginTop: '100px' }}>
-    <h1>404 - Pagina non trovata</h1>
-    <p>La pagina che stai cercando non esiste.</p>
-  </div>
-);
-
 function App() {
   return (
     <ThemeProvider theme={theme}>
@@ -126,7 +118,7 @@ function App() {
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     
                     {/* 404 Not Found */}
-                    <Route path="*" element={<NotFoundPage />} />
+                    <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Router>
               </TransactionProvider>

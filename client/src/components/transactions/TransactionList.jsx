@@ -32,10 +32,10 @@ import {
   ArrowDownward,
   ClearAll
 } from '@mui/icons-material';
-import { TransactionContext } from '../context/TransactionContext';
-import { CategoryContext } from '../context/CategoryContext';
-import { AccountContext } from '../context/AccountContext';
-import { AlertContext } from '../context/AlertContext';
+import { TransactionContext } from '../../context/TransactionContext';
+import { CategoryContext } from '../../context/CategoryContext';
+import { AccountContext } from '../../context/AccountContext';
+import { AlertContext } from '../../context/AlertContext';
 
 const TransactionList = () => {
   const { transactions, getTransactions, deleteTransaction, loading } = useContext(TransactionContext);
