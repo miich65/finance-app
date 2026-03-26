@@ -277,13 +277,15 @@ const Accounts = () => {
   const [editAccount, setEditAccount] = useState(null);
   
   useEffect(() => {
-    getAccounts();
+    if (accounts.length === 0) {
+      getAccounts();
+    }
     
     // Carica le transazioni se necessario per il calcolo delle statistiche
     if (transactions.length === 0) {
       getTransactions();
     }
-  }, [getAccounts, getTransactions, transactions.length]);
+  }, [accounts.length, getAccounts, getTransactions, transactions.length]);
   
   const handleOpenDialog = () => {
     setEditAccount(null);

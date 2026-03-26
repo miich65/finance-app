@@ -1,4 +1,4 @@
-import React, { createContext, useReducer, useCallback } from 'react';
+import React, { createContext, useReducer, useCallback, useMemo } from 'react';
 import axios from 'axios';
 
 // Creazione del Context
@@ -115,34 +115,36 @@ const AccountProvider = ({ children }) => {
   }, []);
 
   // Imposta l'account corrente
-  const setCurrentAccount = (account) => {
+  const setCurrentAccount = useCallback((account) => {
     dispatch({
       type: SET_CURRENT_ACCOUNT,
       payload: account
     });
-  };
+  }, []);
 
   // Calcola il saldo totale di tutti gli account
-  const getTotalBalance = () => {
+  const getTotalBalance = useCallback(() => {
     return state.accounts.reduce((total, account) => total + account.currentBalance, 0);
-  };
+  }, [state.accounts]);
 
   // Pulisci errori
-  const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
+  const clearErrors = useCallback(() => dispatch({ type: CLEAR_ERRORS }), []);
+
+  const contextValue = useMemo(() => ({
+    accounts: state.accounts,
+    currentAccount: state.currentAccount,
+    loading: state.loading,
+    error: state.error,
+    getAccounts,
+    addAccount,
+    setCurrentAccount,
+    getTotalBalance,
+    clearErrors
+  }), [state.accounts, state.currentAccount, state.loading, state.error, getAccounts, addAccount, setCurrentAccount, getTotalBalance, clearErrors]);
 
   return (
     <AccountContext.Provider
-      value={{
-        accounts: state.accounts,
-        currentAccount: state.currentAccount,
-        loading: state.loading,
-        error: state.error,
-        getAccounts,
-        addAccount,
-        setCurrentAccount,
-        getTotalBalance,
-        clearErrors
-      }}
+      value={contextValue}
     >
       {children}
     </AccountContext.Provider>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import { 
   Paper, 
   Box, 
@@ -25,12 +25,18 @@ const RecentTransactions = () => {
   const { transactions, getTransactions, loading } = useContext(TransactionContext);
   const [recentTransactions, setRecentTransactions] = useState([]);
 
+  // Ref per tracciare se è già stato eseguito il primo caricamento dati
+  const hasFetchedRef = useRef(false);
+
   useEffect(() => {
     // Carica le transazioni se non sono già state caricate
-    if (transactions.length === 0 && !loading) {
+    if (!hasFetchedRef.current && transactions.length === 0) {
+      hasFetchedRef.current = true;
       getTransactions();
     }
-    
+  }, [transactions.length, getTransactions]);
+
+  useEffect(() => {
     // Filtra e imposta le transazioni recenti (ultime 5)
     if (transactions.length > 0) {
       const sorted = [...transactions].sort((a, b) => {
@@ -38,7 +44,7 @@ const RecentTransactions = () => {
       });
       setRecentTransactions(sorted.slice(0, 5));
     }
-  }, [transactions, getTransactions, loading]);
+  }, [transactions]);
 
   // Funzione per formattare i valori monetari
   const formatCurrency = (value) => {

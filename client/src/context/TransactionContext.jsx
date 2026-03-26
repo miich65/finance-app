@@ -182,6 +182,11 @@ export const TransactionProvider = ({ children }) => {
     state.hasMore,
     state.page,
     state.limit,
+    getTransactions,
+    getTransactionsPage,
+    addTransaction,
+    deleteTransaction,
+    clearTransactions
   ]);
 
   return (
