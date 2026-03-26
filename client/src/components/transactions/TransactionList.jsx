@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { 
   Paper, 
   Box, 
@@ -60,20 +60,26 @@ const TransactionList = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
 
+  // Ref per tracciare se è già stato eseguito il primo caricamento dati
+  const hasFetchedRef = useRef({ transactions: false, categories: false, accounts: false });
+
   // Carica i dati necessari
   useEffect(() => {
-    if (transactions.length === 0 && !loading) {
+    if (!hasFetchedRef.current.transactions && transactions.length === 0) {
+      hasFetchedRef.current.transactions = true;
       getTransactions();
     }
     
-    if (categories.length === 0) {
+    if (!hasFetchedRef.current.categories && categories.length === 0) {
+      hasFetchedRef.current.categories = true;
       getCategories();
     }
     
-    if (accounts.length === 0) {
+    if (!hasFetchedRef.current.accounts && accounts.length === 0) {
+      hasFetchedRef.current.accounts = true;
       getAccounts();
     }
-  }, [getTransactions, getCategories, getAccounts, transactions.length, categories.length, accounts.length, loading]);
+  }, [getTransactions, getCategories, getAccounts, transactions.length, categories.length, accounts.length]);
 
   // Filtra le transazioni in base ai filtri applicati
   useEffect(() => {

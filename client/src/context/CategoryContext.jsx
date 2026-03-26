@@ -1,4 +1,4 @@
-import React, { createContext, useReducer, useCallback } from 'react';
+import React, { createContext, useReducer, useCallback, useMemo } from 'react';
 import axios from 'axios';
 
 // Creazione del Context
@@ -108,7 +108,7 @@ const CategoryProvider = ({ children }) => {
   }, []);
 
   // Filtra le categorie per tipo
-  const filterCategoriesByType = (type) => {
+  const filterCategoriesByType = useCallback((type) => {
     if (!type || type === 'all') {
       return state.categories;
     }
@@ -116,22 +116,24 @@ const CategoryProvider = ({ children }) => {
     return state.categories.filter(
       category => category.type === type || category.type === 'both'
     );
-  };
+  }, [state.categories]);
 
   // Pulisci errori
-  const clearErrors = () => dispatch({ type: CLEAR_ERRORS });
+  const clearErrors = useCallback(() => dispatch({ type: CLEAR_ERRORS }), []);
+
+  const contextValue = useMemo(() => ({
+    categories: state.categories,
+    loading: state.loading,
+    error: state.error,
+    getCategories,
+    addCategory,
+    filterCategoriesByType,
+    clearErrors
+  }), [state.categories, state.loading, state.error, getCategories, addCategory, filterCategoriesByType, clearErrors]);
 
   return (
     <CategoryContext.Provider
-      value={{
-        categories: state.categories,
-        loading: state.loading,
-        error: state.error,
-        getCategories,
-        addCategory,
-        filterCategoriesByType,
-        clearErrors
-      }}
+      value={contextValue}
     >
       {children}
     </CategoryContext.Provider>
