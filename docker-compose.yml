@@ -1,6 +1,19 @@
 version: '3.8'
 
 services:
+  mongodb:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
   backend:
     build:
       context: .
@@ -8,11 +21,19 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - MONGO_URI=mongodb://finance-app-user:bjkwjewg0'13£!Abc@127.0.0.1:27017/finance-app?authSource=finance-app
-    network_mode: "host"
+      - MONGO_URI=mongodb://mongodb:27017/finance-app
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
   frontend:
     build:
       context: .
       dockerfile: client/Dockerfile
     ports:
       - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_data:

@@ -1,18 +1,21 @@
 # client/Dockerfile
 
-FROM node:18
+FROM node:18 AS build
 
 WORKDIR /app
 
 COPY client/package*.json ./
 COPY client/ ./
 
-# 👇 Aggiungi questa riga prima del build
 ENV NODE_OPTIONS=--openssl-legacy-provider
 
 RUN npm install
 RUN npm run build
 
-RUN npm install -g serve
+FROM nginx:alpine
+
+COPY --from=build /app/build /usr/share/nginx/html
+COPY client/nginx.conf /etc/nginx/conf.d/default.conf
+
 EXPOSE 3000
-CMD ["serve", "-s", "build"]
+CMD ["nginx", "-g", "daemon off;"]
