@@ -1,4 +1,4 @@
-import React, { createContext, useReducer } from 'react';
+import React, { createContext, useReducer, useCallback } from 'react';
 import axios from 'axios';
 
 // Creazione del Context
@@ -68,7 +68,7 @@ const AccountProvider = ({ children }) => {
   const [state, dispatch] = useReducer(accountReducer, initialState);
 
   // Ottieni tutti gli account
-  const getAccounts = async () => {
+  const getAccounts = useCallback(async () => {
     try {
       dispatch({ type: SET_LOADING });
       
@@ -84,10 +84,10 @@ const AccountProvider = ({ children }) => {
         payload: err.response?.data?.msg || 'Errore nel recupero degli account'
       });
     }
-  };
+  }, []);
 
   // Aggiungi un nuovo account
-  const addAccount = async (account) => {
+  const addAccount = useCallback(async (account) => {
     const config = {
       headers: {
         'Content-Type': 'application/json'
@@ -112,7 +112,7 @@ const AccountProvider = ({ children }) => {
       });
       throw err;
     }
-  };
+  }, []);
 
   // Imposta l'account corrente
   const setCurrentAccount = (account) => {

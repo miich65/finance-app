@@ -1,4 +1,4 @@
-import React, { createContext, useReducer } from 'react';
+import React, { createContext, useReducer, useCallback } from 'react';
 import axios from 'axios';
 
 // Creazione del Context
@@ -61,7 +61,7 @@ const CategoryProvider = ({ children }) => {
   const [state, dispatch] = useReducer(categoryReducer, initialState);
 
   // Ottieni tutte le categorie
-  const getCategories = async () => {
+  const getCategories = useCallback(async () => {
     try {
       dispatch({ type: SET_LOADING });
       
@@ -77,10 +77,10 @@ const CategoryProvider = ({ children }) => {
         payload: err.response?.data?.msg || 'Errore nel recupero delle categorie'
       });
     }
-  };
+  }, []);
 
   // Aggiungi una nuova categoria
-  const addCategory = async (category) => {
+  const addCategory = useCallback(async (category) => {
     const config = {
       headers: {
         'Content-Type': 'application/json'
@@ -105,7 +105,7 @@ const CategoryProvider = ({ children }) => {
       });
       throw err;
     }
-  };
+  }, []);
 
   // Filtra le categorie per tipo
   const filterCategoriesByType = (type) => {
